@@ -6,6 +6,7 @@ from basketball_reference_web_scraper.parsers.box_scores.games import parse_game
 from basketball_reference_web_scraper.parsers.box_scores.teams import parse_team_totals
 from basketball_reference_web_scraper.parsers.schedule import parse_schedule, parse_schedule_for_month_url_paths
 from basketball_reference_web_scraper.parsers.players_season_totals import parse_players_season_totals
+from basketball_reference_web_scraper.parsers.player_advanced import parse_players_advanced_stats
 
 BASE_URL = 'https://www.basketball-reference.com'
 
@@ -94,3 +95,16 @@ def team_box_scores(day, month, year):
         for game_url_path in game_url_paths
         for box_score in team_box_score(game_url_path=game_url_path)
     ]
+
+
+def player_advanced_stats(season_end_year):
+    url = '{BASE_URL}/leagues/NBA_{season_end_year}_advanced.html'.format(
+        BASE_URL=BASE_URL,
+        season_end_year=season_end_year,
+    )
+
+    response = requests.get(url=url)
+
+    response.raise_for_status()
+
+    return parse_players_advanced_stats(response.content)
