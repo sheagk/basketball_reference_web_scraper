@@ -187,6 +187,12 @@ def parse_positions(positions_content):
 def parse_positions_as_string(positions_content):
     return '-'.join([position.value for position in parse_positions(positions_content)])
 
+def extract_player_name(name_id_content):
+    return name_id_content.split('\\')[0].replace('*', '')
+
+def extract_player_id(name_id_content):
+    return name_id_content.split('\\')[1]
+
 COLUMN_RENAMER = {
     "empty"                : "empty",
     "Season"               : "season",

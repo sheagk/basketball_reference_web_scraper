@@ -1,6 +1,9 @@
 from lxml import html
 
+from basketball_reference_web_scraper.utilities import merge_two_dicts
 from basketball_reference_web_scraper.data  import TEAM_ABBREVIATIONS_TO_TEAM, COLUMN_RENAMER, COLUMN_PARSER
+from basketball_reference_web_scraper.parsers.common import find_team_column, \
+    parse_row_given_header_column, split_header_columns
 
 
 ### set list of aliases allowed for the different tables
@@ -22,26 +25,23 @@ __base_career_tables = (__per_game_names + __totals_names +
 
 __playoff_career_tables = ['playoffs_'+k for k in __base_career_tables]
 
-build_keys = lambda outkey, list:  [(item, outkey) for item in list]
-__base_table_renamer = dict(
-    build_keys('per_game', __per_game_names) + 
-    build_keys('totals', __totals_names) + 
-    build_keys('per_minute', __per_minute_names) + 
-    build_keys('per_poss', __per_poss_names) + 
-    build_keys('advanced', __advanced_names) + 
-    build_keys('shooting', __shooting_names) + 
-    build_keys('pbp', __pbp_names))
+__build_key_rename_keys_list = lambda outkey, list:  [(item, outkey) for item in list]
+__base_career_table_renamer = dict(
+    __build_key_rename_keys_list('per_game', __per_game_names) + 
+    __build_key_rename_keys_list('totals', __totals_names) + 
+    __build_key_rename_keys_list('per_minute', __per_minute_names) + 
+    __build_key_rename_keys_list('per_poss', __per_poss_names) + 
+    __build_key_rename_keys_list('advanced', __advanced_names) + 
+    __build_key_rename_keys_list('shooting', __shooting_names) + 
+    __build_key_rename_keys_list('pbp', __pbp_names) +
+    __build_key_rename_keys_list('year-and-career-highs', __game_high_names))
 
-__playoff_career_table_renamer = dict([('playoffs_'+k, 'playoffs_'+v) for (k, v) in __base_table_renamer.items()])
+### note -- there is no year-and-career-highs table for the playoffs
+__playoff_career_table_renamer = dict([('playoffs_'+k, 'playoffs_'+v) 
+    for (k, v) in __base_career_table_renamer.items() if v != 'year-and-career-highs'])
 
-VALID_CAREER_TABLE_NAMES = __base_career_tables + __playoff_career_tables + __game_high_names
-_career_table_renamer = {**__base_table_renamer, **__playoff_career_table_renamer, 
-    **dict(build_keys('year-and-career-highs', __game_high_names))}
-
-UNIQUE_CAREER_TABLES = list(set(_career_table_renamer.values()))
-
-def split_header_columns(header_string):
-    return header_string.split(",")
+career_table_renamer = merge_two_dicts(
+    __base_career_table_renamer, __playoff_career_table_renamer)
 
 ## per-game, totals, per 36 minutes, and per 100 posessions all use this:
 __career_base_header = "Season,Age,Tm,Lg,Pos,G,GS,MP,FG,FGA,FG%,3P,3PA,3P%,2P,2PA,2P%,eFG%,FT,FTA,FT%,ORB,DRB,TRB,AST,STL,BLK,TOV,PF,PTS"
@@ -72,8 +72,15 @@ __base_career_table_headers = {
 
 ## note that playoff tables have identical headers as regular season tables
 ## so use the same header columns for the playoff tables as the regular columns
-__playoff_career_table_headers = dict([('playoffs_'+k, v) for (k, v) in __base_career_table_headers.items()])
-_career_table_headers = {**__base_career_table_headers, **__playoff_career_table_headers}
+## but remember that there's again no playoffs version of year-and-career-highs
+__playoff_career_table_headers = dict([('playoffs_'+k, v) 
+    for (k, v) in __base_career_table_headers.items() if k != 'year-and-career-highs'])
+
+career_table_headers = merge_two_dicts(
+    __base_career_table_headers, __playoff_career_table_headers)
+
+VALID_CAREER_TABLE_NAMES = __base_career_tables + __playoff_career_tables
+UNIQUE_CAREER_TABLES = list(set(career_table_renamer.values()))
 
 def get_table_rows(tree, div_id):
     divs = tree.xpath('//div[@id="{div_id}"]'.format(div_id=div_id))
@@ -87,48 +94,29 @@ def get_table_rows(tree, div_id):
     rows = div.xpath('//table/tbody/tr')
     return rows
 
-def parse_player_career_stats_row(row, header_columns):
-    """
-    parse a single row given a list of column names
-
-    leverages COLUMN_RENAMER and COLUMN_PARSER to get output names
-    and the datatype of each column
-    """
-
-    to_return = {"slug":  str(row[1].get("data-append-csv"))}
-    for ii, key in enumerate(header_columns):
-        if header_columns[ii] != 'empty':
-            to_return[COLUMN_RENAMER[key]] = COLUMN_PARSER[key](row[ii].text_content())
-    return to_return
-
-def find_team_column(header_columns):
-    return header_columns.index('Tm')
-
-
 def get_divid_headercolumns(table):
     """
     get the id string to search for in the page and the headers for a table
     """
-    if table not in _career_table_renamer:
+    if table not in career_table_renamer:
         msg = "Don't know how to get table {table}.  Must be one of: ".format(table=table)
-        msg += ' '.join(list(_career_table_renamer.keys()))
+        msg += ', '.join(list(career_table_renamer.keys()))
         raise KeyError(msg)
 
-    resolved_table = _career_table_renamer[table]
+    resolved_table = career_table_renamer[table]
     
     div_id = 'all_'+resolved_table
-    header_columns = _career_table_headers[resolved_table]
+    header_columns = career_table_headers[resolved_table]
     team_column = find_team_column(header_columns)
 
     return div_id, header_columns, team_column
-
 
 def parse_a_players_career_table(page, table):
     tree = html.fromstring(page)
     div_id, header_columns, team_column = get_divid_headercolumns(table)
 
     rows = get_table_rows(tree, div_id)
-    parsed_rows = [parse_player_career_stats_row(row, header_columns) \
+    parsed_rows = [parse_row_given_header_column(row, header_columns) \
         for row in rows if row[team_column].text_content() != "TOT"]
     
     return parsed_rows

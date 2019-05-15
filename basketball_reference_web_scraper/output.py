@@ -2,6 +2,7 @@ import csv
 import json
 
 from basketball_reference_web_scraper.data import OutputType, OutputWriteOption
+from basketball_reference_web_scraper.utilities import merge_two_dicts
 
 box_score_fieldname = [
     "slug",
@@ -111,11 +112,6 @@ default_json_options = {
     "indent": 4,
 }
 
-
-def merge_two_dicts(first, second):
-    combined = first.copy()
-    combined.update(second)
-    return combined
 
 
 def output(values, output_type, output_file_path, encoder, csv_writer, 
@@ -285,11 +281,11 @@ def team_box_scores_to_csv(rows, output_file_path, write_option):
 
 
 def players_career_writer(rows, output_file_path, write_option, table):
-    from basketball_reference_web_scraper.parsers.player_career import _career_table_headers, _career_table_renamer
+    from basketball_reference_web_scraper.parsers.player_career import career_table_headers, career_table_renamer
     from basketball_reference_web_scraper.data import COLUMN_RENAMER
 
-    resolved_table = _career_table_renamer[table]
-    fieldnames = [COLUMN_RENAMER[k] for k in _career_table_headers[resolved_table] if k != 'empty']
+    resolved_table = career_table_renamer[table]
+    fieldnames = [COLUMN_RENAMER[k] for k in career_table_headers[resolved_table] if k != 'empty']
 
     with open(output_file_path, write_option.value, newline="") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
