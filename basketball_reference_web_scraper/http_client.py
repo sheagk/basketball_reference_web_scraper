@@ -8,7 +8,29 @@ from basketball_reference_web_scraper.parsers.schedule import parse_schedule, pa
 from basketball_reference_web_scraper.parsers.players_season_totals import parse_players_season_totals
 from basketball_reference_web_scraper.parsers.player_advanced import parse_players_advanced_stats
 
+## imports for career stats:
+from basketball_reference_web_scraper.parsers.player_career import parse_a_players_career_table
+
 BASE_URL = 'https://www.basketball-reference.com'
+
+def player_career(player_id, tables=['totals', 'advanced']):
+    if isinstance(tables, str):
+        tables = [tables]
+
+    tables = [table.lower() for table in tables]
+
+    first_init = player_id[0]
+    url = '{BASE_URL}/players/{first_init}/{player_id}.html'.format(
+        BASE_URL=BASE_URL,
+        first_init=first_init,
+        player_id=player_id)
+
+    response = requests.get(url=url)
+
+    response.raise_for_status()
+
+    return [parse_a_players_career_table(response.content, table) for table in tables]
+
 
 
 def player_box_scores(day, month, year):

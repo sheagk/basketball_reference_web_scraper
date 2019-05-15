@@ -118,13 +118,14 @@ def merge_two_dicts(first, second):
     return combined
 
 
-def output(values, output_type, output_file_path, encoder, csv_writer, output_write_option=None, json_options=None):
+def output(values, output_type, output_file_path, encoder, csv_writer, 
+    output_write_option=None, json_options=None, table=None):
     if output_type is None:
         return values
 
     write_option = OutputWriteOption.WRITE if output_write_option is None else output_write_option
 
-    if output_type == OutputType.JSON or output_type=="JSON":
+    if output_type == OutputType.JSON or output_type.upper()=="JSON":
         options = default_json_options if json_options is None else merge_two_dicts(first=default_json_options, second=json_options)
         if output_file_path is None:
             return json.dumps(values, cls=encoder, **options)
@@ -132,11 +133,14 @@ def output(values, output_type, output_file_path, encoder, csv_writer, output_wr
             with open(output_file_path, write_option.value, newline="") as json_file:
                 return json.dump(values, json_file, cls=encoder, **options)
 
-    if output_type == OutputType.CSV or output_type=="CSV":
+    if output_type == OutputType.CSV or output_type.upper()=="CSV":
         if output_file_path is None:
             raise ValueError("CSV output must contain a file path")
         else:
-            return csv_writer(rows=values, output_file_path=output_file_path, write_option=write_option)
+            kwargs = dict(rows=values, output_file_path=output_file_path, write_option=write_option)
+            if csv_writer is players_career_writer:
+                kwargs['table'] = table
+            return csv_writer(**kwargs)
 
     raise ValueError("Unknown output type: {output_type}".format(output_type=output_type))
 
@@ -278,3 +282,19 @@ def team_box_scores_to_csv(rows, output_file_path, write_option):
                 "personal_fouls": row["personal_fouls"],
             } for row in rows
         )
+
+
+def players_career_writer(rows, output_file_path, write_option, table):
+    from basketball_reference_web_scraper.parsers.player_career import _career_table_headers, _career_table_renamer
+    from basketball_reference_web_scraper.data import COLUMN_RENAMER
+
+    resolved_table = _career_table_renamer[table]
+    fieldnames = [COLUMN_RENAMER[k] for k in _career_table_headers[resolved_table] if k != 'empty']
+
+    with open(output_file_path, write_option.value, newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+
+        ## here I've opted to store the team and positions as raw strings, so can just turn my row into a dictionary
+        writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
+
