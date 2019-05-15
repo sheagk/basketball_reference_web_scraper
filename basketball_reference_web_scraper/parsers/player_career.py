@@ -85,8 +85,8 @@ UNIQUE_CAREER_TABLES = list(set(career_table_renamer.values()))
 def get_table_rows(tree, div_id):
     divs = tree.xpath('//div[@id="{div_id}"]'.format(div_id=div_id))
     if len(divs) != 1:
-        raise IOError("Got incorrect number of divs for {div_id} (expected 1, got {num_divs}".format(
-            table=table, num_divs=len(divs)))
+        raise IOError("Got incorrect number of divs for {div_id} (expected 1, got {num_divs})".format(
+            div_id=div_id, num_divs=len(divs)))
 
     div = divs[0]
 

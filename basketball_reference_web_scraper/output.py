@@ -279,6 +279,22 @@ def team_box_scores_to_csv(rows, output_file_path, write_option):
             } for row in rows
         )
 
+def playoff_series_to_csv(rows, output_file_path, write_option):
+    fieldnames = ['series_name', 'winning_team', 'losing_team',
+        'winning_team_games_won', 'losing_team_games_won', 'stats_link_ending']
+    with open(output_file_path, write_option.value, newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(
+            {
+               'series_name':row['series_name'],
+                "winning_team": row["winning_team"].value, 
+                "losing_team": row["losing_team"].value,
+                "winning_team_games_won": row["winning_team_games_won"],
+                "losing_team_games_won": row["losing_team_games_won"],
+                "stats_link_ending": row["stats_link_ending"],
+            } for row in rows
+        )
 
 def players_career_writer(rows, output_file_path, write_option, table):
     from basketball_reference_web_scraper.parsers.player_career import career_table_headers, career_table_renamer

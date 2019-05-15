@@ -40,18 +40,20 @@ from basketball_reference_web_scraper.data import Team
 
 ## API
 
-This client has four methods
+This client has seven methods
 	
 * Getting player box scores by a date (`client.player_box_scores`)
 * Getting team box scores by a date (`client.team_box_scores`)
 * Getting the schedule for a season (`client.season_schedule`)
-* Getting players totals for a season (`client.players_season_totals`)
-* Getting season-by-season stats for a player's entire career (includes
+* Getting all of the playerss totals for a season (`client.players_season_totals`)
+* Getting all of the players' advanced stats for a season (`client.players_advanced_stats`)
+* Getting season-by-season stats for a single player's entire career (includes
   support for all the tables on a basketball-reference.com career stat
-  page (see, for example, [Lebron James's
+  page (`client.player_career_tables`; see, for example, [Lebron James's
   career page](https://www.basketball-reference.com/players/j/jamesle01.html) 
+* Getting a list of series in a given season's playoffs (`client.playoff_series_list`)
 
-You can see all four methods used in [this `repl`](https://repl.it/@jaebradley/v300api-examples).
+You can see the first four methods used in [this `repl`](https://repl.it/@jaebradley/v300api-examples).
 
 ### Data output
 
