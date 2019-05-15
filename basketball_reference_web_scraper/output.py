@@ -116,6 +116,10 @@ default_json_options = {
 
 def output(values, output_type, output_file_path, encoder, csv_writer, 
     output_write_option=None, json_options=None, table=None):
+    if output_file_path is not None and output_type is None:
+        print("-- specified output_file_path but no output_type")
+        print("-- must give both to save file(s)")
+
     if output_type is None:
         return values
 
@@ -134,7 +138,7 @@ def output(values, output_type, output_file_path, encoder, csv_writer,
             raise ValueError("CSV output must contain a file path")
         else:
             kwargs = dict(rows=values, output_file_path=output_file_path, write_option=write_option)
-            if csv_writer is players_career_writer:
+            if (csv_writer == players_career_writer) or (csv_writer == playoff_stats_writer):
                 kwargs['table'] = table
             return csv_writer(**kwargs)
 
@@ -298,7 +302,7 @@ def playoff_series_to_csv(rows, output_file_path, write_option):
 
 def players_career_writer(rows, output_file_path, write_option, table):
     from basketball_reference_web_scraper.parsers.player_career import career_table_headers, career_table_renamer
-    from basketball_reference_web_scraper.data import COLUMN_RENAMER
+    from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER
 
     resolved_table = career_table_renamer[table]
     fieldnames = [COLUMN_RENAMER[k] for k in career_table_headers[resolved_table] if k != 'empty']
@@ -308,5 +312,31 @@ def players_career_writer(rows, output_file_path, write_option, table):
         writer.writeheader()
 
         ## here I've opted to store the team and positions as raw strings, so can just turn my row into a dictionary
+        writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
+
+
+def playoff_stats_writer(rows, output_file_path, write_option, table):
+    from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER
+    from basketball_reference_web_scraper.parsers.playoff_series_stats import \
+        _playoff_basic_header_columns, _playoff_advanced_header_columns
+
+    assert table in ['basic', 'advanced'], "table must be one of 'basic' or 'advanced'"
+
+    if table == 'basic':
+        header_columns = _playoff_basic_header_columns
+    else:
+        header_columns = _playoff_advanced_header_columns
+
+    ## skip empty columns and handle the player column separately, since it's turned into two
+    fieldnames = [COLUMN_RENAMER[k] for k in header_columns if k not in ['empty', 'Player']]
+    if 'Player' in header_columns:
+        ## put the player name and player id first
+        fieldnames = ['player_id', 'player_name'] + fieldnames
+
+    with open(output_file_path, write_option.value, newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+
+        ## again, just raw strings, so turn each row into a dictionary:
         writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
 

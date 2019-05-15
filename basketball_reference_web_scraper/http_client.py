@@ -8,8 +8,7 @@ from basketball_reference_web_scraper.parsers.schedule import parse_schedule, pa
 from basketball_reference_web_scraper.parsers.players_season_totals import parse_players_season_totals
 from basketball_reference_web_scraper.parsers.player_advanced import parse_players_advanced_stats
 from basketball_reference_web_scraper.parsers.playoffs_series_list import parse_playoff_series_list
-
-## imports for career stats:
+from basketball_reference_web_scraper.parsers.playoff_series_stats import parse_playoff_series_stats
 from basketball_reference_web_scraper.parsers.player_career import parse_a_players_career_table
 
 BASE_URL = 'https://www.basketball-reference.com'
@@ -92,6 +91,22 @@ def playoffs_series(playoffs_year):
     response.raise_for_status()
 
     return parse_playoff_series_list(response.content)
+
+
+def playoff_series_stats(playoff_series, tables=['basic', 'advanced']):
+    url = '{BASE_URL}/{series_path}'.format(
+        BASE_URL=BASE_URL,
+        series_path=playoff_series['stats_link_ending'],
+    )
+
+    winning_team = playoff_series['winning_team']
+    losing_team = playoff_series['losing_team']
+
+    response = requests.get(url=url)
+
+    response.raise_for_status()
+
+    return [parse_playoff_series_stats(response.content, winning_team, losing_team, table) for table in tables]
 
 
 def players_season_totals(season_end_year):

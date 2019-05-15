@@ -18,3 +18,11 @@ class InvalidPlayer(Exception):
     def __init__(self, player_id):
         message = "Player ID of {player_id} is invalid".format(player_id=player_id)
         super().__init__(message)
+
+class InvalidSeries(Exception):
+    def __init__(self, series):
+        message = "No series between {winning_team} and {losing_team} exists at {series_address}".format(
+            winning_team=series['winning_team'].value,
+            losing_team=series['losing_team'].value,
+            series_address=series['stats_link_ending'])
+        super().__init__(message)

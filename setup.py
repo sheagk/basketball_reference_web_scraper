@@ -21,8 +21,9 @@ setuptools.setup(
         "idna==2.7",
         "lxml==4.2.5",
         "pytz==2018.6",
-        "requests==2.20.0",
-        "urllib3==1.25.2",
+        "requests",
+        "urllib3",
+        'bs4',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
