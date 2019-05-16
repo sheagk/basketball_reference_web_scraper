@@ -1,5 +1,6 @@
 import csv
 import json
+import copy
 
 from basketball_reference_web_scraper.data import OutputType, OutputWriteOption
 from basketball_reference_web_scraper.utilities import merge_two_dicts
@@ -117,6 +118,10 @@ default_json_options = {
 
 def output(values, output_type, output_file_path, encoder, csv_writer, 
     output_write_option=None, json_options=None, table=None):
+    if output_type is None:
+        ## nothing else to do or check; just return
+        return values
+
     if output_file_path is not None and output_type is None:
         print("-- specified output_file_path but no output_type")
         print("-- must give both to save file(s)")
@@ -135,6 +140,9 @@ def output(values, output_type, output_file_path, encoder, csv_writer,
 
     if output_type == OutputType.CSV or output_type.upper()=="CSV":
         assert output_file_path is not None, "CSV output must contain a file path"
+        if not output_file_path.endswith('.csv'):
+            print("-- adding '.csv' to the output file path")
+            output_file_path = output_file_path + '.csv'
 
         kwargs = dict(rows=values, output_file_path=output_file_path, write_option=write_option)
         if (csv_writer == players_career_writer) or (csv_writer == playoff_stats_writer):
@@ -329,7 +337,11 @@ def playoff_stats_writer(rows, output_file_path, write_option, table):
     assert table in ['basic', 'advanced'], "table must be one of 'basic' or 'advanced'"
 
     if table == 'basic':
-        header_columns = _playoff_basic_header_columns
+        header_columns = copy.deepcopy(_playoff_basic_header_columns)
+        
+        ## older playoff series don't keep track of games started
+        if 'games_started' not in rows[0].keys():
+            header_columns.pop(header_columns.index('GS'))
     else:
         header_columns = _playoff_advanced_header_columns
 
@@ -344,5 +356,20 @@ def playoff_stats_writer(rows, output_file_path, write_option, table):
         writer.writeheader()
 
         ## again, just raw strings, so turn each row into a dictionary:
+        writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
+
+
+def csv_writer_from_keys(rows, output_file_path, write_option, table):
+    """
+    write a list of dictionaries to a file using the keys of the first row as the column headers
+
+    all rows must have exactly the same keys.  no guarantee of column ordering,
+    unless the input rows are OrderedDictionaries
+    """
+
+    fieldnames = rows[0].keys()
+    with open(output_file_path, write_option.value, newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
         writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
 
