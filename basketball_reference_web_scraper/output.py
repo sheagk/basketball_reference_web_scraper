@@ -120,29 +120,33 @@ def output(values, output_type, output_file_path, encoder, csv_writer,
         print("-- specified output_file_path but no output_type")
         print("-- must give both to save file(s)")
 
-    if output_type is None:
-        return values
-
     write_option = OutputWriteOption.WRITE if output_write_option is None else output_write_option
 
+    file_written = False
     if output_type == OutputType.JSON or output_type.upper()=="JSON":
         options = default_json_options if json_options is None else merge_two_dicts(first=default_json_options, second=json_options)
         if output_file_path is None:
-            return json.dumps(values, cls=encoder, **options)
+            json.dumps(values, cls=encoder, **options)
         else:
             with open(output_file_path, write_option.value, newline="") as json_file:
-                return json.dump(values, json_file, cls=encoder, **options)
+                json.dump(values, json_file, cls=encoder, **options)
+        file_written = True
 
     if output_type == OutputType.CSV or output_type.upper()=="CSV":
-        if output_file_path is None:
-            raise ValueError("CSV output must contain a file path")
-        else:
-            kwargs = dict(rows=values, output_file_path=output_file_path, write_option=write_option)
-            if (csv_writer == players_career_writer) or (csv_writer == playoff_stats_writer):
-                kwargs['table'] = table
-            return csv_writer(**kwargs)
+        assert output_file_path is not None, "CSV output must contain a file path"
 
-    raise ValueError("Unknown output type: {output_type}".format(output_type=output_type))
+        kwargs = dict(rows=values, output_file_path=output_file_path, write_option=write_option)
+        if (csv_writer == players_career_writer) or (csv_writer == playoff_stats_writer):
+            kwargs['table'] = table
+        csv_writer(**kwargs)
+
+        file_written = True
+
+    if output_type is not None and file_written == False:
+        ValueError("Unknown output type: {output_type}".format(output_type=output_type))
+
+    return values
+
 
 # I wrote the explicit mapping of CSV values because there didn't seem to be a way of outputting the values of enums
 # without doing it this way
