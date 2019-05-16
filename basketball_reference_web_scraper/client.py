@@ -1,11 +1,9 @@
 import requests
 
 from basketball_reference_web_scraper import http_client
+from basketball_reference_web_scraper import output
 
 from basketball_reference_web_scraper.errors import InvalidSeason, InvalidDate
-from basketball_reference_web_scraper.output import box_scores_to_csv, schedule_to_csv, players_season_totals_to_csv, \
-    team_box_scores_to_csv, players_advanced_to_csv, players_career_writer, playoff_series_to_csv, playoff_stats_writer
-from basketball_reference_web_scraper.output import output
 from basketball_reference_web_scraper.json_encoders import BasketballReferenceJSONEncoder
 
 
@@ -17,12 +15,12 @@ def player_box_scores(day, month, year, output_type=None, output_file_path=None,
             raise InvalidDate(day=day, month=month, year=year)
         else:
             raise http_error
-    return output(
+    return output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
         output_write_option=output_write_option,
-        csv_writer=box_scores_to_csv,
+        csv_writer=output.box_scores_to_csv,
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
     )
@@ -40,12 +38,12 @@ def season_schedule(season_end_year, output_type=None, output_file_path=None, ou
             raise InvalidSeason(season_end_year=season_end_year)
         else:
             raise http_error
-    return output(
+    return output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
         output_write_option=output_write_option,
-        csv_writer=schedule_to_csv,
+        csv_writer=output.schedule_to_csv,
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
     )
@@ -65,12 +63,12 @@ def playoff_series_list(playoffs_year, output_type=None, output_file_path=None, 
             raise InvalidSeason(season_end_year=playoffs_year)
         else:
             raise http_error
-    return output(
+    return output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
         output_write_option=output_write_option,
-        csv_writer=playoff_series_to_csv,
+        csv_writer=output.playoff_series_to_csv,
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
     )
@@ -109,12 +107,12 @@ def player_career_tables(player_id, tables=['totals', 'advanced'],
         output_file_path_list = [output_file_path+'_{table}.csv'.format(table=table) for table in tables]
     else:
         output_file_path_list = [output_file_path] * len(tables)
-    return [output(
+    return [output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
         output_write_option=output_write_option,
-        csv_writer=players_career_writer,
+        csv_writer=output.players_career_writer,
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
         table=table,
@@ -161,12 +159,12 @@ def playoff_series_stats(playoff_series, tables=['basic', 'advanced'],
     else:
         output_file_path_list = [output_file_path] * len(tables)
         
-    return [output(
+    return [output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
         output_write_option=output_write_option,
-        csv_writer=playoff_stats_writer,
+        csv_writer=output.playoff_stats_writer,
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
         table=table,
@@ -181,12 +179,12 @@ def players_season_totals(season_end_year, output_type=None, output_file_path=No
             raise InvalidSeason(season_end_year=season_end_year)
         else:
             raise http_error
-    return output(
+    return output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
         output_write_option=output_write_option,
-        csv_writer=players_season_totals_to_csv,
+        csv_writer=output.players_season_totals_to_csv,
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
     )
@@ -200,12 +198,12 @@ def team_box_scores(day, month, year, output_type=None, output_file_path=None, o
             raise InvalidDate(day=day, month=month, year=year)
         else:
             raise http_error
-    return output(
+    return output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
         output_write_option=output_write_option,
-        csv_writer=team_box_scores_to_csv,
+        csv_writer=output.team_box_scores_to_csv,
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
     )
@@ -219,12 +217,12 @@ def players_advanced_stats(season_end_year,output_type=None,output_file_path=Non
             raise InvalidSeason(season_end_year=season_end_year)
         else:
             raise http_error
-    return output(
+    return output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
         output_write_option=output_write_option,
-        csv_writer=players_advanced_to_csv,
+        csv_writer=output.players_advanced_to_csv,
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
     )
