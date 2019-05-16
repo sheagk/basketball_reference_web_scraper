@@ -18,8 +18,8 @@ def parse_series_list_row(row):
     winning_team = str_to_str(teams_string.split('over')[0])
     losing_team = str_to_str(teams_string.split('over')[1].strip().split('\n')[0])
     
-    winning_team = TEAM_NAME_TO_TEAM.get(winning_team.upper())
-    losing_team = TEAM_NAME_TO_TEAM.get(losing_team.upper())
+    winning_team = TEAM_NAME_TO_TEAM(winning_team.upper())
+    losing_team = TEAM_NAME_TO_TEAM(losing_team.upper())
 
     record = teams_string.split('(')[-1].split(')')[0]
     winning_team_games_won = str_to_int(record.split('-')[0])

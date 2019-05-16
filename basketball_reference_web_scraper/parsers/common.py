@@ -11,6 +11,7 @@ def extract_name_rows_from_table(tab, required_classes, excluded_row_classes):
 
     else:
         name = tab.find('caption').text.strip()
+        name = name.upper()
 
         ## get all rows that we don't exclude due to their class, that have a table cell, and 
         ## where that first table cell is not 'Team Totals' (cause I don't want those rows)
@@ -326,7 +327,8 @@ def parse_souped_row_given_header_columns(row, header_columns):
         elif header_columns[ii] == 'Player':
             ## split player into player_name and player_id
             to_return['player_id'] = row[ii].get('data-append-csv')
-            to_return['player_name'] = row[ii].text
+            ## drop the star for a player's name that indicates they're in the hall of fame
+            to_return['player_name'] = row[ii].text.replace('*', '')
         else:
             # print(key, COLUMN_RENAMER[key], COLUMN_PARSER[key], row[ii].text)
             to_return[COLUMN_RENAMER[key]] = COLUMN_PARSER[key](row[ii].text)
