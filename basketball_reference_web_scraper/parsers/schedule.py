@@ -2,16 +2,15 @@ from lxml import html
 import datetime
 import pytz
 
-from basketball_reference_web_scraper.data import Team
+from basketball_reference_web_scraper.data import Team, TEAM_NAME_TO_TEAM
 from basketball_reference_web_scraper.utilities import str_to_int
 
-TEAM_NAME_TO_TEAM = {
-    member.value: member
-    for (_, member) in Team.__members__.items()
-}
+# TEAM_NAME_TO_TEAM = {
+#     member.value: member
+#     for (_, member) in Team.__members__.items()
+# }
 
-TEAM_NAME_TO_TEAM["NEW ORLEANS/OKLAHOMA CITY HORNETS"] = Team.NEW_ORLEANS_OKLAHOMA_CITY_HORNETS
-
+# TEAM_NAME_TO_TEAM["NEW ORLEANS/OKLAHOMA CITY HORNETS"] = Team.NEW_ORLEANS_OKLAHOMA_CITY_HORNETS
 
 def parse_start_time(formatted_date, formatted_time_of_day):
     if formatted_time_of_day is not None and formatted_time_of_day not in ["", " "]:

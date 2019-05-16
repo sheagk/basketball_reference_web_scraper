@@ -1,36 +1,37 @@
 from lxml import html
 
+from basketball_reference_web_scraper.utilities import str_to_str, str_to_float, str_to_int
 from basketball_reference_web_scraper.data import TEAM_ABBREVIATIONS_TO_TEAM, POSITION_ABBREVIATIONS_TO_POSITION
 
 
 def parse_player_advanced_stats(row):
     return {
-        "player_id": str(row[1].get("data-append-csv")),
-        "player_name": str(row[1].text_content()),
+        "player_id": str_to_str(row[1].get("data-append-csv")),
+        "player_name": str_to_str(row[1].text_content()),
         "positions": parse_positions(row[2].text_content()),
-        "age": int(row[3].text_content()),
+        "age": str_to_int(row[3].text_content()),
         "team": TEAM_ABBREVIATIONS_TO_TEAM[row[4].text_content()],
-        "games_played": int(row[5].text_content()),
-        "minutes_played": int(row[6].text_content()),
-        "player_efficiency_rating": row[7].text_content(),
-        "true_shooting_percent": row[8].text_content(),
-        "three_point_attempt_rate": row[9].text_content(),
-        "free_throw_attempt_rate": row[10].text_content(),
-        "offensive_rebound_pct": row[11].text_content(),
-        "defensive_rebound_pct": row[12].text_content(),
-        "total_rebound_pct": row[13].text_content(),
-        "assists_pct": row[14].text_content(),
-        "steals_pct": row[15].text_content(),
-        "blocks_pct": row[16].text_content(),
-        "turnover_pct": row[17].text_content(),
-        "usage_pct": row[18].text_content(),
-        "offensive_win_shares": row[20].text_content(),
-        "defensive_win_shares": row[21].text_content(),
-        "total_win_shares": row[22].text_content(),
-        "offensive_bpm": row[25].text_content(),
-        "defensive_bpm": row[26].text_content(),
-        "total_bpm": row[27].text_content(),
-        "vorp": row[28].text_content(),
+        "games_played": str_to_int(row[5].text_content()),
+        "minutes_played": str_to_int(row[6].text_content()),
+        "player_efficiency_rating": str_to_float(row[7].text_content()),
+        "true_shooting_percent": str_to_float(row[8].text_content()),
+        "three_point_attempt_rate": str_to_float(row[9].text_content()),
+        "free_throw_attempt_rate": str_to_float(row[10].text_content()),
+        "offensive_rebound_pct": str_to_float(row[11].text_content()),
+        "defensive_rebound_pct": str_to_float(row[12].text_content()),
+        "total_rebound_pct": str_to_float(row[13].text_content()),
+        "assists_pct": str_to_float(row[14].text_content()),
+        "steals_pct": str_to_float(row[15].text_content()),
+        "blocks_pct": str_to_float(row[16].text_content()),
+        "turnover_pct": str_to_float(row[17].text_content()),
+        "usage_pct": str_to_float(row[18].text_content()),
+        "offensive_win_shares": str_to_float(row[20].text_content()),
+        "defensive_win_shares": str_to_float(row[21].text_content()),
+        "total_win_shares": str_to_float(row[22].text_content()),
+        "offensive_bpm": str_to_float(row[25].text_content()),
+        "defensive_bpm": str_to_float(row[26].text_content()),
+        "total_bpm": str_to_float(row[27].text_content()),
+        "vorp": str_to_float(row[28].text_content()),
     }
 
 

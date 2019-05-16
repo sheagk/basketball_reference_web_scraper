@@ -1,13 +1,12 @@
 from lxml import html
 
+from basketball_reference_web_scraper.utilities import str_to_str, str_to_int
 from basketball_reference_web_scraper.data import TEAM_ABBREVIATIONS_TO_TEAM, POSITION_ABBREVIATIONS_TO_POSITION
-from basketball_reference_web_scraper.utilities import str_to_int
-
 
 def parse_player_season_totals(row):
     return {
-        "player_id": str(row[1].get("data-append-csv")),
-        "player_name": str(row[1].text_content()),
+        "player_id": str_to_str(row[1].get("data-append-csv")),
+        "player_name": str_to_str(row[1].text_content()),
         "positions": parse_positions(row[2].text_content()),
         "age": str_to_int(row[3].text_content(), default=None),
         "team": TEAM_ABBREVIATIONS_TO_TEAM.get(row[4].text_content()),
