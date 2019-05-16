@@ -107,7 +107,7 @@ def player_career_tables(player_id, tables=['totals', 'advanced'],
         output_file_path_list = [output_file_path+'_{table}.csv'.format(table=table) for table in tables]
     else:
         output_file_path_list = [output_file_path] * len(tables)
-    return [output.output(
+    return {table: output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
@@ -116,7 +116,7 @@ def player_career_tables(player_id, tables=['totals', 'advanced'],
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
         table=table,
-    ) for (table, values, output_file_path) in zip(tables, values_list, output_file_path_list)]
+    ) for (table, values, output_file_path) in zip(tables, values_list, output_file_path_list)}
 
 
 def playoff_series_stats(playoff_series, tables=['basic', 'advanced'], 
@@ -159,7 +159,7 @@ def playoff_series_stats(playoff_series, tables=['basic', 'advanced'],
     else:
         output_file_path_list = [output_file_path] * len(tables)
         
-    return [output.output(
+    return {table: output.output(
         values=values,
         output_type=output_type,
         output_file_path=output_file_path,
@@ -168,7 +168,7 @@ def playoff_series_stats(playoff_series, tables=['basic', 'advanced'],
         encoder=BasketballReferenceJSONEncoder,
         json_options=json_options,
         table=table,
-    ) for (table, values, output_file_path) in zip(tables, values_list, output_file_path_list)]
+    ) for (table, values, output_file_path) in zip(tables, values_list, output_file_path_list)}
 
 
 def players_season_totals(season_end_year, output_type=None, output_file_path=None, output_write_option=None, json_options=None):
