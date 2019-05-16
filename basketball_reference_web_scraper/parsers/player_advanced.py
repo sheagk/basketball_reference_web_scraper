@@ -5,7 +5,8 @@ from basketball_reference_web_scraper.data import TEAM_ABBREVIATIONS_TO_TEAM, PO
 
 def parse_player_advanced_stats(row):
     return {
-        "name": str(row[1].text_content()),
+        "player_id": str(row[1].get("data-append-csv")),
+        "player_name": str(row[1].text_content()),
         "positions": parse_positions(row[2].text_content()),
         "age": int(row[3].text_content()),
         "team": TEAM_ABBREVIATIONS_TO_TEAM[row[4].text_content()],
@@ -35,19 +36,19 @@ def parse_player_advanced_stats(row):
 
 def parse_players_advanced_stats(page):
     tree = html.fromstring(page)
-    print("gotpage")
+
     # Basketball Reference includes individual rows for players that played for multiple teams in a season
     # These rows have a separate class ("italic_text partial_table") than the players that played for a single team
     # across a season.
     rows = tree.xpath('//table[@id="advanced_stats"]/tbody/tr[contains(@class, "full_table") or contains(@class, "italic_text partial_table") and not(contains(@class, "rowSum"))]')
-    totals = []
+    parsed_rows = []
     for row in rows:
         # Basketball Reference includes a "total" row for players that got traded
         # which is essentially a sum of all player team rows
         # I want to avoid including those, so I check the "team" field value for "TOT"
         if row[4].text_content() != "TOT":
-            totals.append(parse_player_advanced_stats(row))
-    return totals
+            parsed_rows.append(parse_player_advanced_stats(row))
+    return parsed_rows
 
 
 def parse_positions(positions_content):

@@ -5,8 +5,8 @@ from basketball_reference_web_scraper.data import OutputType, OutputWriteOption
 from basketball_reference_web_scraper.utilities import merge_two_dicts
 
 box_score_fieldname = [
-    "slug",
-    "name",
+    "player_id",
+    "player_name",
     "team",
     "location",
     "opponent",
@@ -37,8 +37,8 @@ game_fieldname = [
 ]
 
 player_season_totals_fieldname = [
-    "slug",
-    "name",
+    "player_id",
+    "player_name",
     "positions",
     "age",
     "team",
@@ -79,7 +79,8 @@ team_box_score_fieldname = [
 ]
 
 player_advanced_fieldname=[
-        "name",
+        "player_id",
+        "player_name",
         "positions",
         "age",
         "team",
@@ -158,8 +159,8 @@ def box_scores_to_csv(rows, output_file_path, write_option):
         writer.writeheader()
         writer.writerows(
             {
-                "slug": row["slug"],
-                "name": row["name"],
+                "player_id": row["player_id"],
+                "player_name": row["player_name"],
                 "team": row["team"].value,
                 "location": row["location"].value,
                 "opponent": row["opponent"].value,
@@ -204,8 +205,8 @@ def players_season_totals_to_csv(rows, output_file_path, write_option):
         writer.writeheader()
         writer.writerows(
             {
-                "slug": row["slug"],
-                "name": row["name"],
+                "player_id": row["player_id"],
+                "player_name": row["player_name"],
                 "positions": "-".join(map(lambda position: position.value, row["positions"])),
                 "age": row["age"],
                 "team": row["team"].value,
@@ -234,8 +235,9 @@ def players_advanced_to_csv(rows,output_file_path,write_option):
         writer = csv.DictWriter(csv_file, fieldnames=player_advanced_fieldname)
         writer.writeheader()
         writer.writerows(
-            {
-                "name": row["name"],
+            {   
+                "player_id": row["player_id"],
+                "player_name": row["player_name"],
                 "positions": "-".join(map(lambda position: position.value, row["positions"])),
                 "age": row["age"],
                 "team": row["team"].value,
