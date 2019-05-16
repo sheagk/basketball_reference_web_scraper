@@ -12,6 +12,7 @@ from basketball_reference_web_scraper.parsers.playoff_series_stats import parse_
 from basketball_reference_web_scraper.parsers.player_career import parse_a_players_career_table
 
 BASE_URL = 'https://www.basketball-reference.com'
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36'
 
 def player_career(player_id, tables=['totals', 'advanced']):
     if isinstance(tables, str):
@@ -25,7 +26,7 @@ def player_career(player_id, tables=['totals', 'advanced']):
         first_init=first_init,
         player_id=player_id)
 
-    response = requests.get(url=url)
+    response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
@@ -41,7 +42,8 @@ def player_box_scores(day, month, year):
         year=year
     )
 
-    response = requests.get(url=url, allow_redirects=False)
+    response = requests.get(url=url, 
+        allow_redirects=False, headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
@@ -52,7 +54,7 @@ def player_box_scores(day, month, year):
 
 
 def schedule_for_month(url):
-    response = requests.get(url=url)
+    response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
@@ -65,7 +67,7 @@ def season_schedule(season_end_year):
         season_end_year=season_end_year
     )
 
-    response = requests.get(url=url)
+    response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
@@ -86,7 +88,7 @@ def playoffs_series(playoffs_year):
         playoffs_year=playoffs_year
     )
 
-    response = requests.get(url=url)
+    response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
@@ -99,14 +101,12 @@ def playoff_series_stats(playoff_series, tables=['basic', 'advanced']):
         series_path=playoff_series['stats_link_ending'],
     )
 
-    winning_team = playoff_series['winning_team']
-    losing_team = playoff_series['losing_team']
-
-    response = requests.get(url=url)
+    response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
-    return [parse_playoff_series_stats(response.content, winning_team, losing_team, table) for table in tables]
+    return [parse_playoff_series_stats(response.content, playoff_series, table) 
+        for table in tables]
 
 
 def players_season_totals(season_end_year):
@@ -115,7 +115,7 @@ def players_season_totals(season_end_year):
         season_end_year=season_end_year,
     )
 
-    response = requests.get(url=url)
+    response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
@@ -125,7 +125,7 @@ def players_season_totals(season_end_year):
 def team_box_score(game_url_path):
     url = "{BASE_URL}/{game_url_path}".format(BASE_URL=BASE_URL, game_url_path=game_url_path)
 
-    response = requests.get(url=url)
+    response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
@@ -135,7 +135,9 @@ def team_box_score(game_url_path):
 def team_box_scores(day, month, year):
     url = "{BASE_URL}/boxscores/".format(BASE_URL=BASE_URL)
 
-    response = requests.get(url=url, params={"day": day, "month": month, "year": year})
+    response = requests.get(url=url, 
+        params={"day": day, "month": month, "year": year},
+        headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
@@ -154,7 +156,7 @@ def player_advanced_stats(season_end_year):
         season_end_year=season_end_year,
     )
 
-    response = requests.get(url=url)
+    response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
 
     response.raise_for_status()
 
