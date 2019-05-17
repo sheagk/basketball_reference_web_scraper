@@ -46,10 +46,10 @@ def get_all_tables_with_soup(page, required_classes=['stats_table', 'sortable'],
     return all_tables
 
 def parse_team(value):
-    return TEAM_ABBREVIATIONS_TO_TEAM.get(value)
+    return TEAM_ABBREVIATIONS_TO_TEAM[value]
 
 def parse_team_as_string(value):
-    return TEAM_ABBREVIATIONS_TO_TEAM.get(value).value
+    return TEAM_ABBREVIATIONS_TO_TEAM[value].value
 
 def parse_positions(positions_content):
     parsed_positions = list(

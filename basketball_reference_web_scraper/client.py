@@ -5,6 +5,7 @@ import os
 
 from basketball_reference_web_scraper import http_client
 from basketball_reference_web_scraper import output
+from basketball_reference_web_scraper.data import OutputType
 
 from basketball_reference_web_scraper.errors import InvalidSeason, InvalidDate, InvalidPlayer
 from basketball_reference_web_scraper.json_encoders import BasketballReferenceJSONEncoder
@@ -80,7 +81,7 @@ def playoff_series_list(playoffs_year, output_type=None, output_file_path=None, 
     )
 
 
-def player_career_tables(player_id, tables=['totals', 'advanced'], 
+def single_player_career_tables(player_id, tables=['totals', 'advanced'], 
     output_type=None, output_file_path=None, output_write_option=None, json_options=None):
     """
     get one or more tables of a players career (one line per season)
@@ -153,13 +154,19 @@ def playoff_series_stats(playoff_series, tables=['basic', 'advanced'],
     if isinstance(tables, str):
         tables = [tables]
 
+    if output_type == OutputType.JSON or output_type.upper()=="JSON":
+        output_end = 'json'
+    else:
+        output_end = 'csv'
+
     year = int(playoff_series['stats_link_ending'].split('/')[-1].split('-')[0])
     if year <= 1983 and 'advanced' in tables:
         warnings.warn("Cannot get advanced stats for playoffs series before 1984")
         tables = ['basic']
-        if isinstance(output_file_path, str) and not output_file_path.endswith('.csv'):
-            output_file_path = [output_file_path + '_basic.csv']
-
+        if ( isinstance(output_file_path, str) 
+        and not output_file_path.endswith('.csv') 
+        and not output_file_path.endswith('.json')):
+            output_file_path = [f'{output_file_path}_basic.{output_end}']
 
     try:
         values_list = http_client.playoff_series_stats(playoff_series, tables)
@@ -175,7 +182,7 @@ def playoff_series_stats(playoff_series, tables=['basic', 'advanced'],
     elif output_file_path is not None and len(tables) > 1:
         if output_file_path.endswith('.csv'):
             output_file_path = output_file_path[:-4]
-        output_file_path_list = [output_file_path+'_{table}.csv'.format(table=table) for table in tables]
+        output_file_path_list = [output_file_path+f'_{table}.{output_end}' for table in tables]
     else:
         output_file_path_list = [output_file_path] * len(tables)
         
@@ -227,19 +234,17 @@ def playoffs_series_in_one_year(year, tables=['basic', 'advanced'], output_type=
             output_base = output_directory
 
         schedule_output_path = output_base + 'playoff_schedule.csv'
-    else:
-        assert save_schedule == False, "cannot save schedule without an output directory"
-        assert output_type is not None, "must set output_type as well as output_directory to save files"
 
     series_list = playoff_series_list(year, output_file_path=schedule_output_path, **kwargs)
 
     series_count = {}
     for series in series_list:
         round_name = series['series_name']
+        
+        ## are we in either the finals or the conference finals?  
+        ## if so, already unique, so will handle differently
         finals = 'finals' in round_name.lower()
-        if True in [round_name.startswith(f'{x}') for x in ['Western', 'Central', 'Eastern']]:
-            finals = False
-        if 'semi' in round_name.lower():
+        if finals and round_name.lower().index('finals') > 0 and round_name[round_name.lower().index('finals')-1] != ' ':
             finals = False
 
         if round_name in series_count:
@@ -258,6 +263,7 @@ def playoffs_series_in_one_year(year, tables=['basic', 'advanced'], output_type=
         output_file_path_list = [output_base + series['unique_series_name'] for series in series_list]
     else:
         output_file_path_list = [None] * len(series_list)
+
     return {series['unique_series_name']: playoff_series_stats(series, tables, output_file_path=output_file_path, **kwargs)
         for (series, output_file_path) in zip(series_list, output_file_path_list)}
 

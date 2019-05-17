@@ -1,5 +1,4 @@
-from bs4 import BeautifulSoup
-from copy import deepcopy
+import copy
 
 from basketball_reference_web_scraper.utilities import merge_two_dicts
 from basketball_reference_web_scraper.data  import TEAM_ABBREVIATIONS_TO_TEAM, TEAM_TO_TEAM_ABBREVIATIONS
@@ -20,7 +19,7 @@ def get_rows_headercolumns(all_tables, table, team, team_record):
     """
     get the id string to search for in the page and the headers for a table
     """
-    team_name = deepcopy(team.value)
+    team_name = copy.deepcopy(team.value)
 
     if table == 'advanced':
         header_columns = _playoff_advanced_header_columns
@@ -63,7 +62,6 @@ def parse_playoff_series_stats(page, series, table):
     assert table in ['basic', 'advanced'], \
         f"must provide either 'basic' or 'advanced' for table; gave {table}"
 
-    # soup = BeautifulSoup(page, 'html.parser')
     all_tables = get_all_tables_with_soup(page)
 
     winning_team = series['winning_team']

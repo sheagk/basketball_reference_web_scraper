@@ -118,6 +118,9 @@ class Team(Enum):
     # Missing value
     UNK = "UNKNOWN TEAM"
 
+    # rows representing totals for a player traded midseason (if not skipped)
+    TOT = "TOTAL"
+
 
 class OutputType(Enum):
     JSON = "JSON"

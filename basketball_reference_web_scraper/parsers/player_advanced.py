@@ -1,57 +1,23 @@
-from lxml import html
+# from lxml import html
 
 from basketball_reference_web_scraper.utilities import str_to_str, str_to_float, str_to_int
 from basketball_reference_web_scraper.data import TEAM_ABBREVIATIONS_TO_TEAM, POSITION_ABBREVIATIONS_TO_POSITION
+from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER, COLUMN_PARSER, \
+    find_team_column, parse_souped_row_given_header_columns, split_header_columns, get_all_tables_with_soup
 
+__advanced_stats_by_year_header_string = "Player,Pos,Age,Tm,G,MP,PER,TS%,3PAr,FTr,ORB%,DRB%,TRB%,AST%,STL%,BLK%,TOV%,USG%,empty,OWS,DWS,WS,WS/48,empty,OBPM,DBPM,BPM,VORP"
+_advanced_stats_by_year_header_columns = split_header_columns(__advanced_stats_by_year_header_string)
 
-def parse_player_advanced_stats(row):
-    return {
-        "player_id": str_to_str(row[1].get("data-append-csv")),
-        "player_name": str_to_str(row[1].text_content()),
-        "positions": parse_positions(row[2].text_content()),
-        "age": str_to_int(row[3].text_content()),
-        "team": TEAM_ABBREVIATIONS_TO_TEAM[row[4].text_content()],
-        "games_played": str_to_int(row[5].text_content()),
-        "minutes_played": str_to_int(row[6].text_content()),
-        "player_efficiency_rating": str_to_float(row[7].text_content()),
-        "true_shooting_percent": str_to_float(row[8].text_content()),
-        "three_point_attempt_rate": str_to_float(row[9].text_content()),
-        "free_throw_attempt_rate": str_to_float(row[10].text_content()),
-        "offensive_rebound_pct": str_to_float(row[11].text_content()),
-        "defensive_rebound_pct": str_to_float(row[12].text_content()),
-        "total_rebound_pct": str_to_float(row[13].text_content()),
-        "assists_pct": str_to_float(row[14].text_content()),
-        "steals_pct": str_to_float(row[15].text_content()),
-        "blocks_pct": str_to_float(row[16].text_content()),
-        "turnover_pct": str_to_float(row[17].text_content()),
-        "usage_pct": str_to_float(row[18].text_content()),
-        "offensive_win_shares": str_to_float(row[20].text_content()),
-        "defensive_win_shares": str_to_float(row[21].text_content()),
-        "total_win_shares": str_to_float(row[22].text_content()),
-        "offensive_bpm": str_to_float(row[25].text_content()),
-        "defensive_bpm": str_to_float(row[26].text_content()),
-        "total_bpm": str_to_float(row[27].text_content()),
-        "vorp": str_to_float(row[28].text_content()),
-    }
+def parse_players_advanced_stats(page, skip_totals=False):
+    all_tables = get_all_tables_with_soup(page)
 
+    rows = all_tables['ADVANCED TABLE']
+    header_columns = _advanced_stats_by_year_header_columns
 
-def parse_players_advanced_stats(page):
-    tree = html.fromstring(page)
-
-    # Basketball Reference includes individual rows for players that played for multiple teams in a season
-    # These rows have a separate class ("italic_text partial_table") than the players that played for a single team
-    # across a season.
-    rows = tree.xpath('//table[@id="advanced_stats"]/tbody/tr[contains(@class, "full_table") or contains(@class, "italic_text partial_table") and not(contains(@class, "rowSum"))]')
-    parsed_rows = []
-    for row in rows:
-        # Basketball Reference includes a "total" row for players that got traded
-        # which is essentially a sum of all player team rows
-        # I want to avoid including those, so I check the "team" field value for "TOT"
-        if row[4].text_content() != "TOT":
-            parsed_rows.append(parse_player_advanced_stats(row))
-    return parsed_rows
-
-
-def parse_positions(positions_content):
-    return list(map(lambda position_abbreviation: POSITION_ABBREVIATIONS_TO_POSITION[position_abbreviation],
-                    positions_content.split("-")))
+    if skip_totals:
+        team_column = find_team_column(header_columns)
+        return [parse_souped_row_given_header_columns(row, header_columns)
+            for row in rows if (row[team_column].text != "TOT" and len(row[0].text))]
+    else:
+        return [parse_souped_row_given_header_columns(row, header_columns)
+            for row in rows]
