@@ -255,6 +255,7 @@ COLUMN_RENAMER = {
     'TOVperposs'                : 'turnovers_per_100_poss',
     'PFperposs'                 : 'personal_fouls_per_100_poss',
     'PTSperposs'                : 'points_per_100_poss',
+    '+/-'                       : 'game_plus_minus',
 }
 
 
@@ -302,6 +303,7 @@ COLUMN_PARSER = {
     'SF%'                  : parse_percent_time,
     'PF%'                  : parse_percent_time,
     'C%'                   : parse_percent_time,
+    '+/'                   : str_to_int,
 }
 
 for k in COLUMN_RENAMER:
@@ -322,9 +324,9 @@ def parse_souped_row_given_header_columns(row, header_columns):
 
     to_return = {}
     for ii, key in enumerate(header_columns):
-        if header_columns[ii] == 'empty':
+        if key == 'empty':
             continue
-        elif header_columns[ii] == 'Player':
+        elif key == 'Player':
             ## split player into player_name and player_id
             to_return['player_id'] = row[ii].get('data-append-csv')
             ## drop the star for a player's name that indicates they're in the hall of fame

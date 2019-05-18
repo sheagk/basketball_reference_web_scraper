@@ -1,6 +1,5 @@
 # from lxml import html
 
-from basketball_reference_web_scraper.utilities import str_to_str, str_to_int
 from basketball_reference_web_scraper.data import TEAM_ABBREVIATIONS_TO_TEAM, POSITION_ABBREVIATIONS_TO_POSITION
 from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER, COLUMN_PARSER, \
     find_team_column, parse_souped_row_given_header_columns, split_header_columns, get_all_tables_with_soup

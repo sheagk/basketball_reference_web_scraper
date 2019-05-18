@@ -115,19 +115,6 @@ career_table_ids = merge_two_dicts(
 VALID_CAREER_TABLE_NAMES = __base_career_tables + __playoff_career_tables
 UNIQUE_CAREER_TABLES = list(set(career_table_renamer.values()))
 
-### this doesn't work as I thought it did, again because all but the basic table is commented out in the code
-# def get_table_rows(tree, div_id):
-#     divs = tree.xpath('//div[@id="{div_id}"]'.format(div_id=div_id))
-#     if len(divs) != 1:
-#         raise IOError("Got incorrect number of divs for {div_id} (expected 1, got {num_divs})".format(
-#             div_id=div_id, num_divs=len(divs)))
-
-#     div = divs[0]
-
-#     ## grab all table rows within this div, since I've already trimmed the page down to the div I want
-#     rows = div.xpath('//table/tbody/tr')
-#     return rows
-
 def get_rows_headercolumns(all_tables, table):
     """
     get the id string to search for in the page and the headers for a table
@@ -140,7 +127,7 @@ def get_rows_headercolumns(all_tables, table):
     resolved_table = career_table_renamer[table]
     
     table_id = career_table_ids[resolved_table]
-    rows = all_tables[table_id]
+    rows = all_tables[table_id.upper()]
 
     header_columns = career_table_headers[resolved_table]
     team_column = find_team_column(header_columns)

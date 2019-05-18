@@ -5,13 +5,6 @@ import pytz
 from basketball_reference_web_scraper.data import Team, TEAM_NAME_TO_TEAM
 from basketball_reference_web_scraper.utilities import str_to_int
 
-# TEAM_NAME_TO_TEAM = {
-#     member.value: member
-#     for (_, member) in Team.__members__.items()
-# }
-
-# TEAM_NAME_TO_TEAM["NEW ORLEANS/OKLAHOMA CITY HORNETS"] = Team.NEW_ORLEANS_OKLAHOMA_CITY_HORNETS
-
 def parse_start_time(formatted_date, formatted_time_of_day):
     if formatted_time_of_day is not None and formatted_time_of_day not in ["", " "]:
         # Starting in 2018, the start times had a "p" or "a" appended to the end
@@ -45,8 +38,8 @@ def parse_game(row):
     start_time = parse_start_time(formatted_date=row[0].text_content(), formatted_time_of_day=row[1].text_content())
     return {
         "start_time": start_time,
-        "away_team": TEAM_NAME_TO_TEAM.get(row[2].text_content().upper()),
-        "home_team": TEAM_NAME_TO_TEAM.get(row[4].text_content().upper()),
+        "away_team": TEAM_NAME_TO_TEAM(row[2].text_content().upper()),
+        "home_team": TEAM_NAME_TO_TEAM(row[4].text_content().upper()),
         "away_team_score": str_to_int(row[3].text_content(), default=None),
         "home_team_score": str_to_int(row[5].text_content(), default=None),
     }
