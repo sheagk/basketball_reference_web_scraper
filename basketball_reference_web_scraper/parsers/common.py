@@ -95,7 +95,7 @@ COLUMN_RENAMER = {
     "MP"                   : "minutes_played",
     "FG"                   : "made_field_goals",
     "FGA"                  : "attempted_field_goals",
-    "FG%"                  : "free_throw_percent",
+    "FG%"                  : "field_goal_percent",
     "3P"                   : "made_three_point_field_goals",
     "3PA"                  : "attempted_three_point_field_goals",
     "3P%"                  : "three_point_percent",
