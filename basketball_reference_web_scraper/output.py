@@ -176,7 +176,7 @@ def players_season_totals_to_csv(rows, output_file_path, write_option):
         writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
 
 def players_advanced_to_csv(rows,output_file_path,write_option):
-    from basketball_reference_web_scraper.parsers.player_advanced import \
+    from basketball_reference_web_scraper.parsers.players_advanced import \
         _advanced_stats_by_year_header_columns as header_columns
 
     from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER
