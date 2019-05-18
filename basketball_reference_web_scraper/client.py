@@ -87,6 +87,44 @@ def players_advanced_stats(season_end_year, playoffs=False, skip_totals=False,
     )
 
 
+def players_season_totals_per100(season_end_year, playoffs=False, skip_totals=False, 
+    output_type=None, output_file_path=None, output_write_option=None, json_options=None):
+    """
+    scrape the "Totals per 100 possessions" stats of all players from a single year
+
+    Args:
+        season_end_year (int):  year in which the season ends, e.g. 2019 for 2018-2019 season
+        playoffs (bool):  whether to grab the playoffs (True) or regular season (False) table
+        skip_totals (bool):  whether (True) or not (False) to skip the rows representing for 
+            the complete year of a player that is traded (no effect for the playoffs)
+
+        output_type (str):  either csv or json, if you want to save that type of file
+        output_file_path (str): file you want to save to
+        output_write_option (str):  whether to write (default) or append
+        json_options (dict):  dictionary of options to pass to the json writer
+
+    Returns:
+        a list of rows; each row is a dictionary with items named from COLUMN_RENAMER
+    """
+    try:
+        values = http_client.players_season_totals_per100(season_end_year, 
+            skip_totals=skip_totals, playoffs=playoffs)
+    except requests.exceptions.HTTPError as http_error:
+        if http_error.response.status_code == requests.codes.not_found:
+            raise InvalidSeason(season_end_year=season_end_year)
+        else:
+            raise http_error
+    return output.output(
+        values=values,
+        output_type=output_type,
+        output_file_path=output_file_path,
+        output_write_option=output_write_option,
+        csv_writer=output.players_season_totals_per100_to_csv,
+        encoder=BasketballReferenceJSONEncoder,
+        json_options=json_options,
+    )
+
+
 def player_box_scores(day, month, year, output_type=None, output_file_path=None, output_write_option=None, json_options=None):
     try:
         values = http_client.player_box_scores(day=day, month=month, year=year)

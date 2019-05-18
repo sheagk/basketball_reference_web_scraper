@@ -14,7 +14,8 @@ def players_season_totals(season_end_year, skip_totals=False, playoffs=False):
         url = f'{BASE_URL}/leagues/NBA_{season_end_year}_totals.html'
     response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
     response.raise_for_status()
-    return parsers.parse_players_season_totals(response.content)
+    return parsers.parse_players_season_totals(response.content,
+        skip_totals=skip_totals)
 
 
 def players_advanced_stats(season_end_year, skip_totals=False, playoffs=False):
@@ -24,7 +25,19 @@ def players_advanced_stats(season_end_year, skip_totals=False, playoffs=False):
         url = f'{BASE_URL}/leagues/NBA_{season_end_year}_advanced.html'
     response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
     response.raise_for_status()
-    return parsers.parse_players_advanced_stats(response.content)
+    return parsers.parse_players_advanced_stats(response.content, 
+        skip_totals=skip_totals)
+
+
+def players_season_totals_per100(season_end_year, skip_totals=False, playoffs=False):
+    if playoffs:
+        url = f'{BASE_URL}/playoffs/NBA_{season_end_year}_per_poss.html'
+    else:
+        url = f'{BASE_URL}/leagues/NBA_{season_end_year}_per_poss.html'
+    response = requests.get(url=url, headers={'User-Agent': USER_AGENT})
+    response.raise_for_status()
+    return parsers.parse_players_season_totals_per100(response.content, 
+        skip_totals=skip_totals)
 
 
 def player_box_scores(day, month, year):

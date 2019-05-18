@@ -65,6 +65,9 @@ test_list = [
 
     (client.players_season_totals, (2018, ), dict(playoffs=True)), 
 
+    (client.players_season_totals, (2018, ), 
+        dict(playoffs=True, skip_totals=True)), 
+
     ## advanced
     (client.players_advanced_stats, (2018, ), 
         dict(output_type='csv', output_file_path=_tempdir+'/test.csv')),
@@ -84,6 +87,17 @@ test_list = [
     (client.players_advanced_stats, (1950,), {}),
 
     (client.players_advanced_stats, (1950,), dict(playoffs=True)), 
+
+    ## what about per 100?:
+    (client.players_season_totals_per100, (2018, ), 
+        dict(output_type='csv', output_file_path=_tempdir+'/test.csv')),
+
+    (client.players_season_totals_per100, (2018, ), 
+        dict(skip_totals=True, output_type='json', output_file_path=_tempdir+'/test.json')),
+
+    (client.players_season_totals_per100, (2018, ), dict(playoffs=True)), 
+
+    (client.players_season_totals_per100, (1990, ), dict(skip_totals=True)), 
 
     ## what about schedules?
     (client.season_schedule, (2018,), {}),

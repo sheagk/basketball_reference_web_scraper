@@ -2,14 +2,14 @@ from basketball_reference_web_scraper.data import TEAM_ABBREVIATIONS_TO_TEAM, PO
 from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER, COLUMN_PARSER, \
     find_team_column, parse_souped_row_given_header_columns, split_header_columns, get_all_tables_with_soup
 
-__totals_stats_by_year_header_string = "Player,Pos,Age,Tm,G,GS,MP,FG,FGA,FG%,3P,3PA,3P%,2P,2PA,2P%,eFG%,FT,FTA,FT%,ORB,DRB,TRB,AST,STL,BLK,TOV,PF,PTS"
-_totals_stats_by_year_header_columns = split_header_columns(__totals_stats_by_year_header_string)
+__totals_stats_per100_by_year_header_string = "Player,Pos,Age,Tm,G,GS,MP,FGperposs,FGAperposs,FG%,3Pperposs,3PAperposs,3P%,2Pperposs,2PAperposs,2P%,FTperposs,FTAperposs,FT%,ORBperposs,DRBperposs,TRBperposs,ASTperposs,STLperposs,BLKperposs,TOVperposs,PFperposs,PTSperposs,empty,ORtg,DRtg"
+_totals_stats_per100_by_year_header_columns = split_header_columns(__totals_stats_per100_by_year_header_string)
 
-def parse_players_season_totals(page, skip_totals=False):
+def parse_players_season_totals_per100(page, skip_totals=False):
     all_tables = get_all_tables_with_soup(page)
 
-    rows = all_tables['PLAYER TOTALS TABLE']
-    header_columns = _totals_stats_by_year_header_columns
+    rows = all_tables['PLAYER PER 100 POSS TABLE']
+    header_columns = _totals_stats_per100_by_year_header_columns
 
     if skip_totals:
         team_column = find_team_column(header_columns)

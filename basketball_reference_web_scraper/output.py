@@ -193,6 +193,24 @@ def players_advanced_to_csv(rows,output_file_path,write_option):
         ## the teams are now just raw strings, so turn each row into a dictionary:
         writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
 
+def players_season_totals_per100_to_csv(rows, output_file_path, write_option):
+    from basketball_reference_web_scraper.parsers.players_season_totals_per100 import \
+        _totals_stats_per100_by_year_header_columns as header_columns
+    from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER
+
+    fieldnames = [COLUMN_RENAMER[k] for k in header_columns if k not in ['empty', 'Player']]
+    if 'Player' in header_columns:
+        ## put the player name and player id first
+        fieldnames = ['player_id', 'player_name'] + fieldnames
+
+    with open(output_file_path, write_option.value, newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+
+        ## the teams are now just raw strings, so turn each row into a dictionary:
+        writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
+
+
 def team_box_scores_to_csv(rows, output_file_path, write_option):
     with open(output_file_path, write_option.value, newline="") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=team_box_score_fieldname)
