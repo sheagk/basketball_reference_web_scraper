@@ -90,7 +90,9 @@ def players_advanced_stats(season_end_year, playoffs=False, skip_totals=False,
 def players_season_totals_per100(season_end_year, playoffs=False, skip_totals=False, 
     output_type=None, output_file_path=None, output_write_option=None, json_options=None):
     """
-    scrape the "Totals per 100 possessions" stats of all players from a single year
+    scrape the "Totals per 100 possessions" stats of all players from a single year.  
+
+    only available for 1974 onwards; raises a Value error otherwise
 
     Args:
         season_end_year (int):  year in which the season ends, e.g. 2019 for 2018-2019 season
@@ -106,6 +108,9 @@ def players_season_totals_per100(season_end_year, playoffs=False, skip_totals=Fa
     Returns:
         a list of rows; each row is a dictionary with items named from COLUMN_RENAMER
     """
+    if season_end_year < 1974:
+        raise ValueError("Per 100 Poss stats aren't available before 1974")
+
     try:
         values = http_client.players_season_totals_per100(season_end_year, 
             skip_totals=skip_totals, playoffs=playoffs)
