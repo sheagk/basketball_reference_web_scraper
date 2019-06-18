@@ -11,6 +11,7 @@ def extract_name_rows_from_table(tab, required_classes, excluded_row_classes):
 
     else:
         name = tab.find('caption').text.strip()
+        name = name.upper()
 
         ## get all rows that we don't exclude due to their class, that have a table cell, and 
         ## where that first table cell is not 'Team Totals' (cause I don't want those rows)
@@ -45,10 +46,10 @@ def get_all_tables_with_soup(page, required_classes=['stats_table', 'sortable'],
     return all_tables
 
 def parse_team(value):
-    return TEAM_ABBREVIATIONS_TO_TEAM.get(value)
+    return TEAM_ABBREVIATIONS_TO_TEAM[value]
 
 def parse_team_as_string(value):
-    return TEAM_ABBREVIATIONS_TO_TEAM.get(value).value
+    return TEAM_ABBREVIATIONS_TO_TEAM[value].value
 
 def parse_positions(positions_content):
     parsed_positions = list(
@@ -94,7 +95,7 @@ COLUMN_RENAMER = {
     "MP"                   : "minutes_played",
     "FG"                   : "made_field_goals",
     "FGA"                  : "attempted_field_goals",
-    "FG%"                  : "free_throw_percent",
+    "FG%"                  : "field_goal_percent",
     "3P"                   : "made_three_point_field_goals",
     "3PA"                  : "attempted_three_point_field_goals",
     "3P%"                  : "three_point_percent",
@@ -254,6 +255,7 @@ COLUMN_RENAMER = {
     'TOVperposs'                : 'turnovers_per_100_poss',
     'PFperposs'                 : 'personal_fouls_per_100_poss',
     'PTSperposs'                : 'points_per_100_poss',
+    '+/-'                       : 'game_plus_minus',
 }
 
 
@@ -301,6 +303,7 @@ COLUMN_PARSER = {
     'SF%'                  : parse_percent_time,
     'PF%'                  : parse_percent_time,
     'C%'                   : parse_percent_time,
+    '+/'                   : str_to_int,
 }
 
 for k in COLUMN_RENAMER:
@@ -321,12 +324,13 @@ def parse_souped_row_given_header_columns(row, header_columns):
 
     to_return = {}
     for ii, key in enumerate(header_columns):
-        if header_columns[ii] == 'empty':
+        if key == 'empty':
             continue
-        elif header_columns[ii] == 'Player':
+        elif key == 'Player':
             ## split player into player_name and player_id
             to_return['player_id'] = row[ii].get('data-append-csv')
-            to_return['player_name'] = row[ii].text
+            ## drop the star for a player's name that indicates they're in the hall of fame
+            to_return['player_name'] = row[ii].text.replace('*', '')
         else:
             # print(key, COLUMN_RENAMER[key], COLUMN_PARSER[key], row[ii].text)
             to_return[COLUMN_RENAMER[key]] = COLUMN_PARSER[key](row[ii].text)

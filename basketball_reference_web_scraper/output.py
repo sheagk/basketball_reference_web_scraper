@@ -1,12 +1,14 @@
 import csv
 import json
+import copy
+import warnings
 
 from basketball_reference_web_scraper.data import OutputType, OutputWriteOption
 from basketball_reference_web_scraper.utilities import merge_two_dicts
 
 box_score_fieldname = [
-    "slug",
-    "name",
+    "player_id",
+    "player_name",
     "team",
     "location",
     "opponent",
@@ -36,30 +38,6 @@ game_fieldname = [
     "home_team_score",
 ]
 
-player_season_totals_fieldname = [
-    "slug",
-    "name",
-    "positions",
-    "age",
-    "team",
-    "games_played",
-    "games_started",
-    "minutes_played",
-    "made_field_goals",
-    "attempted_field_goals",
-    "made_three_point_field_goals",
-    "attempted_three_point_field_goals",
-    "made_free_throws",
-    "attempted_free_throws",
-    "offensive_rebounds",
-    "defensive_rebounds",
-    "assists",
-    "steals",
-    "blocks",
-    "turnovers",
-    "personal_fouls",
-]
-
 team_box_score_fieldname = [
     "team",
     "minutes_played",
@@ -78,35 +56,6 @@ team_box_score_fieldname = [
     "personal_fouls",
 ]
 
-player_advanced_fieldname=[
-        "name",
-        "positions",
-        "age",
-        "team",
-        "games_played",
-        "minutes_played",
-        "player_efficiency_rating",
-        "true_shooting_percent",
-        "three_point_attempt_rate",
-        "free_throw_attempt_rate",
-        "offensive_rebound_pct",
-        "defensive_rebound_pct",
-        "total_rebound_pct",
-        "assists_pct",
-        "steals_pct",
-        "blocks_pct",
-        "turnover_pct",
-        "usage_pct",
-        "offensive_win_shares",
-        "defensive_win_shares",
-        "total_win_shares",
-        "offensive_bpm",
-        "defensive_bpm",
-        "total_bpm",
-        "vorp"
-
-]
-
 default_json_options = {
     "sort_keys": True,
     "indent": 4,
@@ -116,33 +65,48 @@ default_json_options = {
 
 def output(values, output_type, output_file_path, encoder, csv_writer, 
     output_write_option=None, json_options=None, table=None):
-    if output_file_path is not None and output_type is None:
-        print("-- specified output_file_path but no output_type")
-        print("-- must give both to save file(s)")
-
     if output_type is None:
+        ## nothing else to do or check; just return
         return values
+
+    if output_file_path is not None and output_type is None:
+        if output_file_path.endswith('.json'):
+            output_type = 'json'
+        elif output_file_path.endswith('.csv'):
+            output_type = 'csv'
+        else:
+            warnings.warn("-- specified output_file_path, but it doesn't end with either .json or .csv; will not save")
 
     write_option = OutputWriteOption.WRITE if output_write_option is None else output_write_option
 
+    file_written = False
     if output_type == OutputType.JSON or output_type.upper()=="JSON":
         options = default_json_options if json_options is None else merge_two_dicts(first=default_json_options, second=json_options)
         if output_file_path is None:
-            return json.dumps(values, cls=encoder, **options)
+            json.dumps(values, cls=encoder, **options)
         else:
             with open(output_file_path, write_option.value, newline="") as json_file:
-                return json.dump(values, json_file, cls=encoder, **options)
+                json.dump(values, json_file, cls=encoder, **options)
+        file_written = True
 
     if output_type == OutputType.CSV or output_type.upper()=="CSV":
-        if output_file_path is None:
-            raise ValueError("CSV output must contain a file path")
-        else:
-            kwargs = dict(rows=values, output_file_path=output_file_path, write_option=write_option)
-            if (csv_writer == players_career_writer) or (csv_writer == playoff_stats_writer):
-                kwargs['table'] = table
-            return csv_writer(**kwargs)
+        assert output_file_path is not None, "CSV output must contain a file path"
+        if not output_file_path.endswith('.csv'):
+            print("-- adding '.csv' to the output file path")
+            output_file_path = output_file_path + '.csv'
 
-    raise ValueError("Unknown output type: {output_type}".format(output_type=output_type))
+        kwargs = dict(rows=values, output_file_path=output_file_path, write_option=write_option)
+        if (csv_writer == players_career_writer) or (csv_writer == playoff_stats_writer):
+            kwargs['table'] = table
+        csv_writer(**kwargs)
+
+        file_written = True
+
+    if output_type is not None and file_written == False:
+        ValueError("Unknown output type: {output_type}".format(output_type=output_type))
+
+    return values
+
 
 # I wrote the explicit mapping of CSV values because there didn't seem to be a way of outputting the values of enums
 # without doing it this way
@@ -154,8 +118,8 @@ def box_scores_to_csv(rows, output_file_path, write_option):
         writer.writeheader()
         writer.writerows(
             {
-                "slug": row["slug"],
-                "name": row["name"],
+                "player_id": row["player_id"],
+                "player_name": row["player_name"],
                 "team": row["team"].value,
                 "location": row["location"].value,
                 "opponent": row["opponent"].value,
@@ -195,69 +159,57 @@ def schedule_to_csv(rows, output_file_path, write_option):
 
 
 def players_season_totals_to_csv(rows, output_file_path, write_option):
-    with open(output_file_path, write_option.value, newline="") as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=player_season_totals_fieldname)
-        writer.writeheader()
-        writer.writerows(
-            {
-                "slug": row["slug"],
-                "name": row["name"],
-                "positions": "-".join(map(lambda position: position.value, row["positions"])),
-                "age": row["age"],
-                "team": row["team"].value,
-                "games_played": row["games_played"],
-                "games_started": row["games_started"],
-                "minutes_played": row["minutes_played"],
-                "made_field_goals": row["made_field_goals"],
-                "attempted_field_goals": row["attempted_field_goals"],
-                "made_three_point_field_goals": row["made_three_point_field_goals"],
-                "attempted_three_point_field_goals": row["attempted_three_point_field_goals"],
-                "made_free_throws": row["made_free_throws"],
-                "attempted_free_throws": row["attempted_free_throws"],
-                "offensive_rebounds": row["offensive_rebounds"],
-                "defensive_rebounds": row["defensive_rebounds"],
-                "assists": row["assists"],
-                "steals": row["steals"],
-                "blocks": row["blocks"],
-                "turnovers": row["turnovers"],
-                "personal_fouls": row["personal_fouls"],
-            } for row in rows
-        )
+    from basketball_reference_web_scraper.parsers.players_season_totals import \
+        _totals_stats_by_year_header_columns as header_columns
+    from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER
 
+    fieldnames = [COLUMN_RENAMER[k] for k in header_columns if k not in ['empty', 'Player']]
+    if 'Player' in header_columns:
+        ## put the player name and player id first
+        fieldnames = ['player_id', 'player_name'] + fieldnames
+
+    with open(output_file_path, write_option.value, newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+
+        ## the teams are now just raw strings, so turn each row into a dictionary:
+        writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
 
 def players_advanced_to_csv(rows,output_file_path,write_option):
+    from basketball_reference_web_scraper.parsers.players_advanced import \
+        _advanced_stats_by_year_header_columns as header_columns
+
+    from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER
+
+    fieldnames = [COLUMN_RENAMER[k] for k in header_columns if k not in ['empty', 'Player']]
+    if 'Player' in header_columns:
+        ## put the player name and player id first
+        fieldnames = ['player_id', 'player_name'] + fieldnames
+
     with open(output_file_path, write_option.value, newline="") as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=player_advanced_fieldname)
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(
-            {
-                "name": row["name"],
-                "positions": "-".join(map(lambda position: position.value, row["positions"])),
-                "age": row["age"],
-                "team": row["team"].value,
-                "games_played": row["games_played"],
-                "minutes_played": row["minutes_played"],
-                "player_efficiency_rating": row["player_efficiency_rating"],
-                "true_shooting_percent": row["true_shooting_percent"],
-                "three_point_attempt_rate": row["three_point_attempt_rate"],
-                "free_throw_attempt_rate": row["free_throw_attempt_rate"],
-                "offensive_rebound_pct": row["offensive_rebound_pct"],
-                "defensive_rebound_pct": row["defensive_rebound_pct"],
-                "total_rebound_pct": row["total_rebound_pct"],
-                "assists_pct": row["assists_pct"],
-                "steals_pct": row["steals_pct"],
-                "blocks_pct":row["blocks_pct"],
-                "turnover_pct":row["turnover_pct"] ,
-                "usage_pct":row["usage_pct"],
-                "offensive_win_shares":row["offensive_win_shares"] ,
-                "defensive_win_shares":row["defensive_win_shares"] ,
-                "total_win_shares":row["total_win_shares"],
-                "offensive_bpm":row["offensive_bpm"],
-                "defensive_bpm":row["defensive_bpm"],
-                "total_bpm":row["total_bpm"],
-                "vorp":row["vorp"],
-            } for row in rows
-        )
+
+        ## the teams are now just raw strings, so turn each row into a dictionary:
+        writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
+
+def players_season_totals_per100_to_csv(rows, output_file_path, write_option):
+    from basketball_reference_web_scraper.parsers.players_season_totals_per100 import \
+        _totals_stats_per100_by_year_header_columns as header_columns
+    from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER
+
+    fieldnames = [COLUMN_RENAMER[k] for k in header_columns if k not in ['empty', 'Player']]
+    if 'Player' in header_columns:
+        ## put the player name and player id first
+        fieldnames = ['player_id', 'player_name'] + fieldnames
+
+    with open(output_file_path, write_option.value, newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+
+        ## the teams are now just raw strings, so turn each row into a dictionary:
+        writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
+
 
 def team_box_scores_to_csv(rows, output_file_path, write_option):
     with open(output_file_path, write_option.value, newline="") as csv_file:
@@ -323,7 +275,11 @@ def playoff_stats_writer(rows, output_file_path, write_option, table):
     assert table in ['basic', 'advanced'], "table must be one of 'basic' or 'advanced'"
 
     if table == 'basic':
-        header_columns = _playoff_basic_header_columns
+        header_columns = copy.deepcopy(_playoff_basic_header_columns)
+        
+        ## older playoff series don't keep track of games started
+        if 'games_started' not in rows[0].keys():
+            header_columns.pop(header_columns.index('GS'))
     else:
         header_columns = _playoff_advanced_header_columns
 
@@ -338,5 +294,20 @@ def playoff_stats_writer(rows, output_file_path, write_option, table):
         writer.writeheader()
 
         ## again, just raw strings, so turn each row into a dictionary:
+        writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
+
+
+def csv_writer_from_keys(rows, output_file_path, write_option, table):
+    """
+    write a list of dictionaries to a file using the keys of the first row as the column headers
+
+    all rows must have exactly the same keys.  no guarantee of column ordering,
+    unless the input rows are OrderedDictionaries
+    """
+
+    fieldnames = rows[0].keys()
+    with open(output_file_path, write_option.value, newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
         writer.writerows(dict([(k, row[k]) for k in fieldnames]) for row in rows)
 

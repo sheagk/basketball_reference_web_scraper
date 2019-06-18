@@ -24,6 +24,7 @@ setuptools.setup(
         "requests",
         "urllib3",
         'bs4',
+        "soupsieve",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
