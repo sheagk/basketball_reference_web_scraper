@@ -1,12 +1,11 @@
 from bs4 import BeautifulSoup
-from copy import deepcopy
 
 from basketball_reference_web_scraper.utilities import merge_two_dicts
 from basketball_reference_web_scraper.data  import TEAM_ABBREVIATIONS_TO_TEAM, TEAM_TO_TEAM_ABBREVIATIONS
 from basketball_reference_web_scraper.parsers.common import COLUMN_RENAMER, COLUMN_PARSER, \
      find_team_column, parse_souped_row_given_header_columns, split_header_columns, get_all_tables_with_soup
 
-## only two tables, and they're just "basic" and "advanced", so no aliases (or dictionaries) needed/allowed here
+## only two tables (just "basic" and "advanced") so no aliases (or dictionaries) needed/allowed here
 __playoff_basic_header_string = "Player,Age,G,GS,MP,FG,FGA,3P,3PA,FT,FTA,ORB,DRB,TRB,AST,STL,BLK,TOV,PF,PTS,FG%,3P%,FT%,MPpg,PTSpg,TRBpg,ASTpg,STLpg,BLKpg"
 _playoff_basic_header_columns = split_header_columns(__playoff_basic_header_string)
 
