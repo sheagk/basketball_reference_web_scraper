@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 import copy
 
 from basketball_reference_web_scraper.utilities import merge_two_dicts
